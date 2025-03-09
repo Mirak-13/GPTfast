@@ -1,1 +1,1 @@
-# GPTfast
+Learning proj
