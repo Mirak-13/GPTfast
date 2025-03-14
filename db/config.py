@@ -1,11 +1,18 @@
+import os
+from dotenv import load_dotenv
+
 from pydantic_settings import BaseSettings
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
-from sqlalchemy.orm import sessionmaker, DeclarativeBase, declared_attr, Mapped
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.orm import DeclarativeBase, declared_attr, Mapped
 from sqlalchemy.testing.schema import mapped_column
+
+load_dotenv()
+
+DB_URL = os.getenv("DB_URL")
 
 
 class Settings(BaseSettings):
-    db_url: str = "postgresql+asyncpg://user:password@localhost:port/postgres_db"
+    db_url: str = DB_URL
     db_echo: bool = False
 
 
@@ -13,7 +20,7 @@ settings = Settings()
 
 
 class DatabaseHelper:
-    def __init__(self, url: str, echo: bool = False):
+    def __init__(self, url: str, echo: bool = True):
         self.engine = create_async_engine(url=url, echo=echo)
         self.session_factory = async_sessionmaker(
             bind=self.engine,
@@ -35,7 +42,7 @@ class Base(DeclarativeBase):
     __abstract__ = True
 
     @declared_attr
-    def __table_name__(cls) -> str:
+    def __tablename__(cls) -> str:
         return f"{cls.__name__.lower()}s"
 
     id: Mapped[int] = mapped_column(primary_key=True)
